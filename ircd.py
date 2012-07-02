@@ -109,7 +109,7 @@ class client:
 				pass
 			self.end()
 			self.listener.select_inputs = remove_from_list(self.listener.select_inputs, self.stream)
-			print "NOTICE: Client disconnected due to socket error"
+			print "NOTICE: Client disconnected, possibly due to socket error"
 	
 	def send_global_notice(self, notice):
 		self.send_chunk(":%s NOTICE %s" % (config_ownhost, notice))
