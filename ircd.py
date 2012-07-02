@@ -142,6 +142,7 @@ class user:
 	ip = ""
 	
 	def __init__(self, client, server):
+		self.server = server
 		self.client = client		
 		self.client.send_global_notice("AUTH :*** Looking up your hostname...")
 		hostname, aliaslist, ipaddrlist = socket.gethostbyaddr(self.client.ip)
@@ -199,6 +200,8 @@ class user:
 		
 	def finish_registration(self):
 		self.registered = 3
+		self.server.users[self.nickname] = self
+		print self.server.users
 		self.client.send_numeric("001", ":Welcome to %s, %s!%s@%s" % (config_netname, self.nickname, self.ident, self.real_host))
 		self.client.send_numeric("002", ":Your host is %s, running %s." % (config_ownhost, config_version))
 		self.client.send_numeric("003", ":This server has been running since unknown.")
