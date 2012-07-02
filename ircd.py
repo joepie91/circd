@@ -107,6 +107,7 @@ class client:
 				self.close()
 			except socket.error:
 				pass
+				
 			self.end()
 			self.listener.select_inputs = remove_from_list(self.listener.select_inputs, self.stream)
 			print "NOTICE: Client disconnected, possibly due to socket error"
