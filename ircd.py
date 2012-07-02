@@ -121,7 +121,8 @@ class client:
 			self.user.process_data(data)
 	
 	def end(self):
-		pass
+		if self.user is not None:
+			self.user.end()
 
 class channel:
 	presences = {}
