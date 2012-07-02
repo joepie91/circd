@@ -190,7 +190,10 @@ class user:
 		elif self.registered < 3:
 			self.client.send_numeric("451", "%s %s :You have not completed the challenge PING." % (self.nickname, data[0]))
 		else:
-			print "Received %s command." % data[0]
+			if data[0] == "LUSERS":
+				send_lusers()
+			else:
+				pass
 	
 	def verify_registration(self):
 		if self.registered_nick == True and self.registered_user == True:
