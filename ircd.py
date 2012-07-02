@@ -102,7 +102,7 @@ class client:
 		self.send_chunk(":%s NOTICE %s" % (config_ownhost, notice))
 		
 	def send_numeric(self, numeric, notice):
-		self.send_chunk(":%s NOTICE %s %s" % (config_ownhost, numeric, notice))
+		self.send_chunk(":%s %s %s" % (config_ownhost, numeric, notice))
 	
 	def process_data(self, data):
 		self.buff += data
