@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import math, socket, ssl, select, time, threading, random, string
+from collections import deque
 
 EOC = "\r\n"
 
@@ -149,8 +150,17 @@ class user:
 			self.registered = 1
 			
 	def process_data(self, data):
-		if data[0].upper() in ["USER", "NICK"] and self.registered == 1:
-			if data[0].upper() == "USER":
+		data = deque(data)
+		
+		if data[0].startswith(":"):
+			origin = data.popleft()
+		else:
+			origin = ""
+		
+		data[0] = data[0].upper()
+		
+		if data[0] in ["USER", "NICK"] and self.registered == 1:
+			if data[0] == "USER":
 				if len(data) >= 5:
 					self.ident = data[1]
 					self.realname = data[4]
@@ -158,7 +168,7 @@ class user:
 					self.verify_registration()
 				else:
 					self.client.send_numeric("461", "%s USER :Not enough parameters." % self.nickname)
-			elif data[0].upper() == "NICK":
+			elif data[0] == "NICK":
 				if len(data) >= 2:
 					self.nickname = data[1]
 					self.registered_nick = True
