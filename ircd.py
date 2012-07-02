@@ -157,16 +157,16 @@ class user:
 					self.registered_user = True
 					self.verify_registration()
 				else:
-					send_numeric("461", "%s USER :Not enough parameters." % self.nickname)
+					self.client.send_numeric("461", "%s USER :Not enough parameters." % self.nickname)
 			elif data[0].upper() == "NICK":
 				if len(data) >= 2:
 					self.nickname = data[1]
 					self.registered_nick = True
 					self.verify_registration()
 				else:
-					send_numeric("461", "%s NICK :Not enough parameters." % self.nickname)
+					self.client.send_numeric("461", "%s NICK :Not enough parameters." % self.nickname)
 			else:
-				send_numeric("451", "%s %s :You have not registered." % self.nickname)
+				self.client.send_numeric("451", "%s %s :You have not registered." % self.nickname)
 	
 	def verify_registration(self):
 		if self.registered_nick == True and self.registered_user == True:
