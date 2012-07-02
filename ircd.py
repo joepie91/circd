@@ -226,6 +226,7 @@ class user:
 		self.client.send_numeric("002", ":Your host is %s, running %s." % (config_ownhost, config_version))
 		self.client.send_numeric("003", ":This server has been running since unknown.")
 		self.client.send_numeric("004", ":%s %s %s %s" % (config_ownhost, config_version, "", ""))
+		self.send_lusers()
 	
 	def send_lusers(self):
 		self.client.send_numeric("251", ":There are %d users and 0 invisible on 1 server." % len(self.server.users))
