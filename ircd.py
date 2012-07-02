@@ -209,6 +209,10 @@ class user:
 		self.client.send_numeric("002", ":Your host is %s, running %s." % (config_ownhost, config_version))
 		self.client.send_numeric("003", ":This server has been running since unknown.")
 		self.client.send_numeric("004", ":%s %s %s %s" % (config_ownhost, config_version, "", ""))
+		self.client.send_numeric("251", ":There are %d users and 0 invisible on 1 server." % len(self.server.users))
+		self.client.send_numeric("252", "%d :operator(s) online." % 0)
+		self.client.send_numeric("254", "%d :channel(s) formed." % 0)
+		self.client.send_numeric("255", ":I have %d clients and 1 server." % len(self.server.users))  # TODO: Sum all clients of all listenersm rather than taking the usercount.
 		
 	def end(self):
 		del self.server.users[self.nickname]
