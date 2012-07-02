@@ -201,11 +201,14 @@ class user:
 	def finish_registration(self):
 		self.registered = 3
 		self.server.users[self.nickname] = self
-		print self.server.users
 		self.client.send_numeric("001", ":Welcome to %s, %s!%s@%s" % (config_netname, self.nickname, self.ident, self.real_host))
 		self.client.send_numeric("002", ":Your host is %s, running %s." % (config_ownhost, config_version))
 		self.client.send_numeric("003", ":This server has been running since unknown.")
 		self.client.send_numeric("004", ":%s %s %s %s" % (config_ownhost, config_version, "", ""))
+		
+	def end(self):
+		del self.server.users[self.nickname]
+		print self.server.users
 	
 class presence:
 	user = None
