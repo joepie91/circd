@@ -115,7 +115,7 @@ class client:
 	def process_chunk(self, chunkdata):
 		data = split_irc(chunkdata)
 		if data[0].upper() == "PING":
-			self.send_chunk("PONG %" % data[1])
+			self.send_chunk("PONG %s" % data[1])
 		else:
 			self.user.process_data(data)
 	
