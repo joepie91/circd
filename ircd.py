@@ -191,7 +191,7 @@ class user:
 			self.client.send_numeric("451", "%s :You have not completed the challenge PING." % data[0])
 		else:
 			if data[0] == "LUSERS":
-				send_lusers()
+				self.send_lusers()
 			else:
 				self.client.send_numeric("421", "%s :Unknown command." % data[0])
 	
