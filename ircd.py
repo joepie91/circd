@@ -216,7 +216,6 @@ class user:
 		
 	def end(self):
 		del self.server.users[self.nickname]
-		print self.server.users
 	
 class presence:
 	user = None
