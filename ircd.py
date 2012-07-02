@@ -174,9 +174,12 @@ class user:
 					self.client.send_numeric("461", "%s USER :Not enough parameters." % self.nickname)
 			elif data[0] == "NICK":
 				if len(data) >= 2:
-					self.nickname = data[1]
-					self.registered_nick = True
-					self.verify_registration()
+					if data[1] not in self.server.users:
+						self.nickname = data[1]
+						self.registered_nick = True
+						self.verify_registration()
+					else:
+						self.client.send_numeric("433", "%s %s :Nickname is already in use." % (self.nickname, data[1]))
 				else:
 					self.client.send_numeric("461", "%s NICK :Not enough parameters." % self.nickname)
 		elif self.registered == 2 and data[0] == "PONG":
