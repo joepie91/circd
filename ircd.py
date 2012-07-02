@@ -183,10 +183,11 @@ class user:
 	def verify_registration(self):
 		if self.registered_nick == True and self.registered_user == True:
 			self.registered = 2
-			self.client.send_numeric("001", "Welcome to %s, %s!%s@%s" % (config_netname, self.nickname, self.ident, self.real_host))
-			self.client.send_numeric("002", "Your host is %s, running %s." % (config_ownhost, config_version))
-			self.client.send_numeric("003", "This server has been running since unknown.")
-			self.client.send_numeric("004", "%s %s %s %s" % (config_ownhost, config_version, "", ""))
+			self.client.send_numeric("001", ":Welcome to %s, %s!%s@%s" % (config_netname, self.nickname, self.ident, self.real_host))
+			self.client.send_numeric("002", ":Your host is %s, running %s." % (config_ownhost, config_version))
+			self.client.send_numeric("003", ":This server has been running since unknown.")
+			self.client.send_numeric("004", ":%s %s %s %s" % (config_ownhost, config_version, "", ""))
+			print "Client %s registered from IP %s" % (self.nickname, self.client.ip)
 	
 class presence:
 	user = None
