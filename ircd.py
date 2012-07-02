@@ -58,7 +58,7 @@ class listener:
 							else:
 								connstream = newsocket
 							
-							new_client = client(connstream, remote_ip)
+							new_client = client(connstream, remote_ip, server)
 							
 							self.select_inputs.append(connstream)
 							self.select_outputs.append(connstream)
@@ -90,10 +90,10 @@ class client:
 	user = None
 	ip = ""
 	
-	def __init__(self, connstream, ip):
+	def __init__(self, connstream, ip, server):
 		self.ip = ip
 		self.stream = connstream
-		self.user = user(self)
+		self.user = user(self, server)
 	
 	def send_chunk(self, chunk):
 		self.stream.send(chunk + EOC)
@@ -130,6 +130,7 @@ class channel:
 	
 class user:
 	client = None
+	server = None
 	registered = 0
 	registered_nick = False
 	registered_user = False
@@ -140,7 +141,7 @@ class user:
 	real_host = ""
 	ip = ""
 	
-	def __init__(self, client):
+	def __init__(self, client, server):
 		self.client = client		
 		self.client.send_global_notice("AUTH :*** Looking up your hostname...")
 		hostname, aliaslist, ipaddrlist = socket.gethostbyaddr(self.client.ip)
