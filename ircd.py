@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import math, socket, ssl, select, time, threading, random, string
+import math, socket, ssl, select, time, threading, random, string, os
 from collections import deque
 
 EOC = "\r\n"
@@ -175,19 +175,32 @@ class user:
 					self.verify_registration()
 				else:
 					self.client.send_numeric("461", "%s NICK :Not enough parameters." % self.nickname)
+		elif self.registered == 2 and data[0] == "PONG":
+			if data[1] == self.challenge:
+				self.finish_registration()
 		elif self.registered < 2:
 			self.client.send_numeric("451", "%s %s :You have not registered." % (self.nickname, data[0]))
+		elif self.registered < 3:
+			self.client.send_numeric("451", "%s %s :You have not completed the challenge PING." % (self.nickname, data[0]))
 		else:
 			print "Received %s command." % data[0]
 	
 	def verify_registration(self):
 		if self.registered_nick == True and self.registered_user == True:
 			self.registered = 2
-			self.client.send_numeric("001", ":Welcome to %s, %s!%s@%s" % (config_netname, self.nickname, self.ident, self.real_host))
-			self.client.send_numeric("002", ":Your host is %s, running %s." % (config_ownhost, config_version))
-			self.client.send_numeric("003", ":This server has been running since unknown.")
-			self.client.send_numeric("004", ":%s %s %s %s" % (config_ownhost, config_version, "", ""))
-			print "Client %s registered from IP %s" % (self.nickname, self.client.ip)
+			print "Client %s registered from IP %s, sending challenge string." % (self.nickname, self.client.ip)
+			self.send_challenge()
+			
+	def send_challenge(self):
+		self.challenge = ''.join(random.choice(string.ascii_uppercase + string.digits) for i in xrange(8))
+		self.client.send_chunk("PING :%s" % self.challenge)
+		
+	def finish_registration(self):
+		self.registered = 3
+		self.client.send_numeric("001", ":Welcome to %s, %s!%s@%s" % (config_netname, self.nickname, self.ident, self.real_host))
+		self.client.send_numeric("002", ":Your host is %s, running %s." % (config_ownhost, config_version))
+		self.client.send_numeric("003", ":This server has been running since unknown.")
+		self.client.send_numeric("004", ":%s %s %s %s" % (config_ownhost, config_version, "", ""))
 	
 class presence:
 	user = None
