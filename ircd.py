@@ -58,7 +58,7 @@ class listener:
 							else:
 								connstream = newsocket
 							
-							new_client = client(connstream, remote_ip, server)
+							new_client = client(connstream, remote_ip, server, self)
 							
 							self.select_inputs.append(connstream)
 							self.select_outputs.append(connstream)
@@ -88,15 +88,28 @@ class client:
 	buff = ""
 	stream = None
 	user = None
+	listener = None
 	ip = ""
 	
-	def __init__(self, connstream, ip, server):
+	def __init__(self, connstream, ip, server, listener):
 		self.ip = ip
 		self.stream = connstream
 		self.user = user(self, server)
+		self.listener = listener
 	
 	def send_chunk(self, chunk):
-		self.stream.send(chunk + EOC)
+		try:
+			self.stream.send(chunk + EOC)
+		except socket.error:
+			# TODO: Log quit reason
+			try:
+				self.stream.shutdown(2)
+				self.close()
+			except socket.error:
+				pass
+			self.end()
+			self.listener.select_inputs = remove_from_list(self.listener.select_inputs, self.stream)
+			print "NOTICE: Client disconnected due to socket error"
 	
 	def send_global_notice(self, notice):
 		self.send_chunk(":%s NOTICE %s" % (config_ownhost, notice))
