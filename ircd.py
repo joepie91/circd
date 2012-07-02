@@ -171,7 +171,7 @@ class user:
 					self.registered_user = True
 					self.verify_registration()
 				else:
-					self.client.send_numeric("461", "%s USER :Not enough parameters." % self.nickname)
+					self.client.send_numeric("461", "USER :Not enough parameters.")
 			elif data[0] == "NICK":
 				if len(data) >= 2:
 					if data[1] not in self.server.users:
@@ -179,16 +179,16 @@ class user:
 						self.registered_nick = True
 						self.verify_registration()
 					else:
-						self.client.send_numeric("433", "%s %s :Nickname is already in use." % (self.nickname, data[1]))
+						self.client.send_numeric("433", "%s :Nickname is already in use." % data[1])
 				else:
-					self.client.send_numeric("461", "%s NICK :Not enough parameters." % self.nickname)
+					self.client.send_numeric("461", "NICK :Not enough parameters.")
 		elif self.registered == 2 and data[0] == "PONG":
 			if data[1] == self.challenge:
 				self.finish_registration()
 		elif self.registered < 2:
-			self.client.send_numeric("451", "%s %s :You have not registered." % (self.nickname, data[0]))
+			self.client.send_numeric("451", "%s :You have not registered." % data[0])
 		elif self.registered < 3:
-			self.client.send_numeric("451", "%s %s :You have not completed the challenge PING." % (self.nickname, data[0]))
+			self.client.send_numeric("451", "%s :You have not completed the challenge PING." % data[0])
 		else:
 			if data[0] == "LUSERS":
 				send_lusers()
