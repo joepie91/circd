@@ -135,7 +135,7 @@ class user:
 	registered = 0
 	registered_nick = False
 	registered_user = False
-	nickname = ""
+	nickname = "*"
 	ident = ""
 	realname = ""
 	masked_host = ""
