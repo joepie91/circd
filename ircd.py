@@ -26,13 +26,14 @@ class ircd:
 
 class listener:
 	ssl = False
+	server = None
 	client_list = []
 	client_map = {}
 	select_inputs = []
 	select_outputs = []
 	
-	def __init__(self):
-		pass
+	def __init__(self, server):
+		self.server = server
 		
 	def start(self, interface, port, cert_path, key_path):
 		bindsocket = socket.socket()
@@ -207,5 +208,7 @@ class presence:
 	status = "none"
 	joined = 0
 
-l = listener()
+server = ircd()
+
+l = listener(server)
 l.start("0.0.0.0", 6667, "sample.cert", "sample.key")
