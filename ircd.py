@@ -175,8 +175,10 @@ class user:
 					self.verify_registration()
 				else:
 					self.client.send_numeric("461", "%s NICK :Not enough parameters." % self.nickname)
-			else:
-				self.client.send_numeric("451", "%s %s :You have not registered." % self.nickname)
+		elif self.registered < 2:
+			self.client.send_numeric("451", "%s %s :You have not registered." % (self.nickname, data[0]))
+		else:
+			print "Received %s command." % data[0]
 	
 	def verify_registration(self):
 		if self.registered_nick == True and self.registered_user == True:
