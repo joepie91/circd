@@ -193,7 +193,7 @@ class user:
 			if data[0] == "LUSERS":
 				send_lusers()
 			else:
-				pass
+				self.client.send_numeric("421", "%s :Unknown command." % data[0])
 	
 	def verify_registration(self):
 		if self.registered_nick == True and self.registered_user == True:
