@@ -9,6 +9,7 @@ config_ownhost = "ircd.local"
 config_password = ""
 config_netname = "Cryto IRC"
 config_version = "circd 0.1"
+config_motd = "sample.motd"
 
 def remove_from_list(ls, val):
 	return [value for value in ls if value is not val]
@@ -23,6 +24,14 @@ def split_irc(message):
 class ircd:
 	channels = {}
 	users = {}
+	motd = ""
+	
+	def __init__(self):
+		if config_motd != "":
+			try:
+				self.motd = open(config_motd, "r").read()
+			except IOError:
+				print "WARNING: Could not read MOTD file."
 
 class listener:
 	ssl = False
@@ -227,12 +236,25 @@ class user:
 		self.client.send_numeric("003", ":This server has been running since unknown.")
 		self.client.send_numeric("004", ":%s %s %s %s" % (config_ownhost, config_version, "", ""))
 		self.send_lusers()
+		self.send_motd()
 	
 	def send_lusers(self):
 		self.client.send_numeric("251", ":There are %d users and 0 invisible on 1 server." % len(self.server.users))
 		self.client.send_numeric("252", "%d :operator(s) online" % 0)
 		self.client.send_numeric("254", "%d :channel(s) formed" % 0)
 		self.client.send_numeric("255", ":I have %d clients and 1 server." % len(self.server.users))  # TODO: Sum all clients of all listenersm rather than taking the usercount.
+	
+	def send_motd(self):
+		if server.motd == "":
+			self.client.send_numeric("422", ":No MOTD was set.")
+		else:
+			self.client.send_numeric("375", ":- %s Message of the day -" % config_ownhost)
+			
+			for line in server.motd.split("\n"):
+				if line.rstrip() != "":
+					self.client.send_numeric("372", ":- %s" % line.rstrip())
+				
+			self.client.send_numeric("375", ":End of MOTD for %s." % config_ownhost)
 	
 	def end(self):
 		del self.server.users[self.nickname]
