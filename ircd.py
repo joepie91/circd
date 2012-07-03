@@ -21,6 +21,15 @@ def split_irc(message):
 	else:
 		return message.split(" ")
 
+class autodict(dict):
+	# http://stackoverflow.com/a/652284
+	def __getitem__(self, item):
+		try:
+			return dict.__getitem__(self, item)
+		except KeyError:
+			value = self[item] = type(self)()
+			return value
+			
 class ircd:
 	channels = {}
 	users = {}
