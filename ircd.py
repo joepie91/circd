@@ -74,15 +74,19 @@ class listener:
 							self.client_map[connstream.fileno()] = new_client
 							self.client_list.append(new_client)
 						else:
-							data = sock.recv(1024)
 							cur_client = self.client_map[sock.fileno()]
 							
-							if data:
-								cur_client.process_data(data)
+							try:
+								data = sock.recv(1024)
+							except socket.error, (value, message):
+								cur_client.abort(message)
 							else:
-								cur_client.end()
-								self.select_inputs = remove_from_list(self.select_inputs, sock)
-								print "NOTICE: Client disconnected"
+								if data:
+									cur_client.process_data(data)
+								else:
+									cur_client.end()
+									self.select_inputs = remove_from_list(self.select_inputs, sock)
+									print "NOTICE: Client disconnected"
 					except ssl.SSLError, err:
 						if err.args[0] == ssl.SSL_ERROR_WANT_READ:
 							select.select([sock], [], [])
@@ -106,20 +110,23 @@ class client:
 		self.user = user(self, server)
 		self.listener = listener
 	
+	def abort(self, reason):
+		# TODO: Log quit reason
+		try:
+			self.stream.shutdown(2)
+			self.close()
+		except socket.error:
+			pass
+			
+		self.end()
+		self.listener.select_inputs = remove_from_list(self.listener.select_inputs, self.stream)
+		print "NOTICE: Client disconnected, possibly due to socket error: %s" % reason
+
 	def send_chunk(self, chunk):
 		try:
 			self.stream.send(chunk + EOC)
-		except socket.error:
-			# TODO: Log quit reason
-			try:
-				self.stream.shutdown(2)
-				self.close()
-			except socket.error:
-				pass
-				
-			self.end()
-			self.listener.select_inputs = remove_from_list(self.listener.select_inputs, self.stream)
-			print "NOTICE: Client disconnected, possibly due to socket error"
+		except socket.error, (value, message):
+			self.abort(message)
 	
 	def send_global_notice(self, notice):
 		self.send_chunk(":%s NOTICE %s" % (config_ownhost, notice))
