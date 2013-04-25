@@ -132,6 +132,7 @@ class client:
 		print "NOTICE: Client disconnected, possibly due to socket error: %s" % reason
 
 	def send_chunk(self, chunk):
+		#print chunk
 		try:
 			self.stream.send(chunk + EOC)
 		except socket.error, (value, message):
@@ -142,6 +143,9 @@ class client:
 		
 	def send_numeric(self, numeric, notice):
 		self.send_chunk(":%s %s %s %s" % (config_ownhost, numeric, self.user.nickname, notice))
+		
+	def send_event(self, origin, event, message):
+		self.send_chunk(":%s %s %s" % (origin, event, message))
 	
 	def process_data(self, data):
 		self.buff += data
@@ -168,12 +172,16 @@ class channel:
 	name = ""
 	registered = False
 	
+	def __init__(self, channelname):
+		self.name = channelname
+	
 class user:
 	client = None
 	server = None
 	registered = 0
 	registered_nick = False
 	registered_user = False
+	presences = {}
 	nickname = "*"
 	ident = ""
 	realname = ""
@@ -185,12 +193,22 @@ class user:
 		self.server = server
 		self.client = client		
 		self.client.send_global_notice("AUTH :*** Looking up your hostname...")
-		hostname, aliaslist, ipaddrlist = socket.gethostbyaddr(self.client.ip)
+		
+		try:
+			hostname, aliaslist, ipaddrlist = socket.gethostbyaddr(self.client.ip)
+			self.client.send_global_notice("AUTH :*** Found your hostname")
+		except socket.herror:
+			hostname = self.client.ip
+			self.client.send_global_notice("AUTH :*** Could not find your hostname, using IP address instead")
+			
 		self.real_host = hostname
 		self.masked_host = hostname
-		self.client.send_global_notice("AUTH :*** Found your hostname")
+		
 		if config_password == "":
 			self.registered = 1
+	
+	def __str__(self):
+		return "%s!%s@%s" % (self.nickname, self.ident, self.masked_host)
 			
 	def process_data(self, data):
 		data = deque(data)
@@ -231,6 +249,8 @@ class user:
 		else:
 			if data[0] == "LUSERS":
 				self.send_lusers()
+			elif data[0] == "JOIN":
+				self.join_channel(data[1])
 			else:
 				self.client.send_numeric("421", "%s :Unknown command." % data[0])
 	
@@ -266,19 +286,40 @@ class user:
 		else:
 			self.client.send_numeric("375", ":- %s Message of the day -" % config_ownhost)
 			
-			for line in server.motd.split("\n"):
-				if line.rstrip() != "":
-					self.client.send_numeric("372", ":- %s" % line.rstrip())
+			for line in server.motd.rstrip().split("\n"):
+				self.client.send_numeric("372", ":- %s" % line.rstrip())
 				
 			self.client.send_numeric("375", ":End of MOTD for %s." % config_ownhost)
+	
+	def join_channel(self, channelname):
+		if channelname not in self.server.channels:
+			self.server.channels[channelname] = channel(channelname)
+		
+		targetchannel = self.server.channels[channelname]
+		
+		if self.nickname not in targetchannel.presences:
+			newpresence = presence(targetchannel, self)
+			self.server.channels[channelname].presences[self.nickname] = newpresence
+			self.presences[channelname] = newpresence
+			self.client.send_event(self, "JOIN", ":%s" % channelname)
+			self.client.send_numeric("353", "= %s :%s" % (channelname, "@hai blah"))
+			self.client.send_numeric("366", "%s :End of userlist." % channelname)
+			print self.server.channels[channelname].presences
+			print self.presences[channelname]
 	
 	def end(self):
 		del self.server.users[self.nickname]
 	
 class presence:
 	user = None
-	status = "none"
+	channel = None
+	status = ""
 	joined = 0
+	
+	def __init__(self, targetchannel, targetuser):
+		self.user = targetuser
+		self.channel = targetchannel
+		self.status = ""
 
 server = ircd()
 
